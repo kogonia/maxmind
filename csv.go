@@ -3,7 +3,6 @@ package maxmind
 import (
 	"encoding/csv"
 	"errors"
-	"log"
 	"net/netip"
 	"os"
 )
@@ -37,7 +36,7 @@ func parseCSV(fileName string) (err error) {
 
 			prefix, err := parsePrefix(data[i][0]) // Parse Prefix (network in csv)
 			if err != nil {
-				log.Printf("ERROR data: \"%s\" err: %v", data[i][0], err)
+				//log.Printf("ERROR data: \"%s\" err: %v", data[i][0], err)
 				continue
 			}
 			org := OrgInfo{

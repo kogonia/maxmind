@@ -3,6 +3,6 @@
 go.mod
 go.sum
 
-example/
+example/maxmind_db_update.sh
 
 Geo*.csv

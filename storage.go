@@ -22,6 +22,11 @@ func (oi OrgInfo) String() string {
 	return strings.TrimSpace(string(b.Bytes()))
 }
 
+func (oi OrgInfo) Json() string {
+	js, _ := json.MarshalIndent(oi, "", "\t")
+	return string(js)
+}
+
 var storage = make(map[string]OrgInfo, 524288)
 var mu = sync.Mutex{}
 
