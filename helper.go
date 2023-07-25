@@ -1,9 +1,14 @@
 package maxmind
 
 import (
+	"errors"
 	"net/netip"
 	"strings"
 )
+
+var errFailedToParseCSV = errors.New("failed to parse csv file")
+var errFailedToParsePrefixCSV = errors.New("failed to parse Prefix from csv")
+var errBadAsnProvided = errors.New("bad asn format in request")
 
 func parsePrefix(str string) (netip.Prefix, error) {
 	p := strings.Split(str, "/")

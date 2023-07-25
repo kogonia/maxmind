@@ -2,15 +2,11 @@ package maxmind
 
 import (
 	"encoding/csv"
-	"errors"
 	"net/netip"
 	"os"
 )
 
 const delimiter = ','
-
-var errFailedToParseCSV = errors.New("failed to parse csv file")
-var errFailedToParsePrefixCSV = errors.New("failed to parse Prefix from csv")
 
 func parseCSV(fileName string) (err error) {
 	var f *os.File

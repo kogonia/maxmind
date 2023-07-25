@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/netip"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -52,6 +53,21 @@ func GetByIP(addr string) (OrgInfo, error) {
 			if prefix.Contains(ip) {
 				return org, nil
 			}
+		}
+	}
+	return OrgInfo{}, nil
+}
+
+func GetByASN(asn string) (OrgInfo, error) {
+	if strings.HasPrefix(strings.ToLower(asn), "as") {
+		asn = strings.TrimPrefix(strings.ToLower(asn), "as")
+	}
+	if _, err := strconv.Atoi(asn); err != nil {
+		return OrgInfo{}, errBadAsnProvided
+	}
+	for _, org := range storage {
+		if org.ASN == asn {
+			return org, nil
 		}
 	}
 	return OrgInfo{}, nil
