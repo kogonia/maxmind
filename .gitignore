@@ -1,9 +1,8 @@
 .DS_Store
+*/.DS_Store
 .idea
 
 go.mod
 go.sum
-
-example/maxmind_db_update.sh
 
 Geo*.csv
