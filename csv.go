@@ -23,6 +23,7 @@ func parseCSV(fileName string) (err error) {
 		return
 	}
 
+	tmpStorage := copyStorageData()
 	for i := range data {
 		if len(data[i]) != 3 {
 			return errFailedToParseCSV
@@ -42,6 +43,9 @@ func parseCSV(fileName string) (err error) {
 			}
 			org.save()
 		}
+	}
+	if len(storage) == 0 {
+		storage = tmpStorage
 	}
 	return nil
 }

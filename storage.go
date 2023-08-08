@@ -28,11 +28,24 @@ func (oi OrgInfo) Json() string {
 	return string(js)
 }
 
-var storage = make(map[string]OrgInfo, 524288)
+var storage = emptyStorage()
 var mu = sync.Mutex{}
+
+func emptyStorage() map[string]OrgInfo {
+	return make(map[string]OrgInfo, 524288)
+}
+
+func copyStorageData() map[string]OrgInfo {
+	tmpStorage := emptyStorage()
+	for k, v := range storage {
+		tmpStorage[k] = v
+	}
+	return tmpStorage
+}
 
 func (oi OrgInfo) save() {
 	mu.Lock()
+	defer mu.Unlock()
 	if _, ok := storage[oi.OrgName]; !ok {
 		storage[oi.OrgName] = oi
 	} else {
@@ -40,7 +53,6 @@ func (oi OrgInfo) save() {
 		org.Prefix = append(storage[oi.OrgName].Prefix, oi.Prefix...)
 		storage[oi.OrgName] = org
 	}
-	mu.Unlock()
 }
 
 func GetByIP(addr string) (OrgInfo, error) {

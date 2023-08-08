@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	if err := maxmind.Init(); err != nil {
+	if err := maxmind.Init(0); err != nil {
 		log.Fatal(err)
 	}
 	org, err := maxmind.GetByIP("8.8.8.8")
