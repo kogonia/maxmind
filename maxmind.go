@@ -7,6 +7,5 @@ const (
 )
 
 func Init() error {
-	parseCSV(mxmAsnFile)
-	return nil
+	return parseCSV(mxmAsnFile)
 }
