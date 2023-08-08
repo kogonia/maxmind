@@ -36,16 +36,18 @@ func parseCSV(fileName string) (err error) {
 				//log.Printf("ERROR data: \"%s\" err: %v", data[i][0], err)
 				continue
 			}
-			org := OrgInfo{
+			org := &OrgInfo{
 				OrgName: data[i][2],
 				Prefix:  []netip.Prefix{prefix},
 				ASN:     data[i][1],
 			}
-			org.save()
+			st.save(org)
 		}
 	}
-	if len(storage) == 0 {
-		storage = tmpStorage
+	if len(st.data) == 0 {
+		st.Lock()
+		defer st.Unlock()
+		st = tmpStorage
 	}
 	return nil
 }

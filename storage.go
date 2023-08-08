@@ -1,13 +1,16 @@
 package maxmind
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/netip"
 	"strconv"
 	"strings"
 	"sync"
 )
+
+type storage struct {
+	sync.Mutex
+	data map[string]*OrgInfo
+}
 
 type OrgInfo struct {
 	OrgName string         `json:"org_name,omitempty"`
@@ -17,77 +20,70 @@ type OrgInfo struct {
 	//Country  string `json:"country,omitempty"`
 }
 
-func (oi OrgInfo) String() string {
-	b := bytes.NewBuffer(make([]byte, 0, 64))
-	_ = json.NewEncoder(b).Encode(oi)
-	return strings.TrimSpace(string(b.Bytes()))
+var st = emptyStorage()
+
+func emptyStorage() *storage {
+	return &storage{data: make(map[string]*OrgInfo, 524288)}
 }
 
-func (oi OrgInfo) Json() string {
-	js, _ := json.MarshalIndent(oi, "", "\t")
-	return string(js)
-}
-
-var storage = emptyStorage()
-var mu = sync.Mutex{}
-
-func emptyStorage() map[string]OrgInfo {
-	return make(map[string]OrgInfo, 524288)
-}
-
-func copyStorageData() map[string]OrgInfo {
+func copyStorageData() *storage {
+	if len(st.data) == 0 {
+		return emptyStorage()
+	}
 	tmpStorage := emptyStorage()
-	for k, v := range storage {
-		tmpStorage[k] = v
+	for k, v := range st.data {
+		tmpStorage.data[k] = v
 	}
 	return tmpStorage
 }
 
-func (oi OrgInfo) save() {
-	mu.Lock()
-	defer mu.Unlock()
-	if _, ok := storage[oi.OrgName]; !ok {
-		storage[oi.OrgName] = oi
+func (s *storage) save(oi *OrgInfo) {
+	s.Lock()
+	defer s.Unlock()
+	if _, ok := s.data[oi.OrgName]; !ok {
+		s.data[oi.OrgName] = oi
 	} else {
-		org := storage[oi.OrgName]
-		org.Prefix = append(storage[oi.OrgName].Prefix, oi.Prefix...)
-		storage[oi.OrgName] = org
+		org := s.data[oi.OrgName]
+		org.Prefix = append(s.data[oi.OrgName].Prefix, oi.Prefix...)
+		s.data[oi.OrgName] = org
 	}
 }
 
-func GetByIP(addr string) (OrgInfo, error) {
+func GetByIP(addr string) (*OrgInfo, error) {
 	ip, err := netip.ParseAddr(addr)
 	if err != nil {
-		return OrgInfo{}, err
+		return nil, err
 	}
-	for _, org := range storage {
+	st.Lock()
+	defer st.Unlock()
+	for _, org := range st.data {
 		for _, prefix := range org.Prefix {
 			if prefix.Contains(ip) {
 				return org, nil
 			}
 		}
 	}
-	return OrgInfo{}, nil
+	return nil, nil
 }
 
-func GetByASN(asn string) (OrgInfo, error) {
+func GetByASN(asn string) (*OrgInfo, error) {
 	if strings.HasPrefix(strings.ToLower(asn), "as") {
 		asn = strings.TrimPrefix(strings.ToLower(asn), "as")
 	}
 	if _, err := strconv.Atoi(asn); err != nil {
-		return OrgInfo{}, errBadAsnProvided
+		return nil, errBadAsnProvided
 	}
-	for _, org := range storage {
+	for _, org := range st.data {
 		if org.ASN == asn {
 			return org, nil
 		}
 	}
-	return OrgInfo{}, nil
+	return nil, nil
 }
 
-func GetByOrgName(orgName string) OrgInfo {
-	if org, ok := storage[orgName]; ok {
+func GetByOrgName(orgName string) *OrgInfo {
+	if org, ok := st.data[orgName]; ok {
 		return org
 	}
-	return OrgInfo{}
+	return nil
 }
