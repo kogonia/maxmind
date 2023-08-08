@@ -13,11 +13,8 @@ const (
 // Init set interval in hours for database update.
 // if 0 then no dynamic updates
 func Init(interval uint) error {
-	if interval == 0 {
-		return parseCSV(mxmAsnFile)
-	}
-
-	for {
+	parseCSV(mxmAsnFile)
+	for interval > 0 {
 		select {
 		case <-time.Tick(time.Duration(interval) * time.Hour):
 			if err := parseCSV(mxmAsnFile); err != nil {
